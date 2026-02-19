@@ -2045,16 +2045,147 @@ document.getElementById('sync-gas-btn').addEventListener('click', () => {
 (function() {
   // すでにデータがある場合はスキップ
   if (localStorage.getItem('demo_initialized')) return;
-  
+
+  const MONTH = '2026-02';
+
   // スタッフ名簿
   const roster = [
-    { name: '山田 太郎', employmentType: 'partTime', hourlyWage: 1100, weeklyHours: 20 },
-    { name: '佐藤 花子', employmentType: 'partTime', hourlyWage: 1050, weeklyHours: 25 },
-    { name: '鈴木 一郎', employmentType: 'partTime', hourlyWage: 1100, weeklyHours: 15 },
-    { name: '田中 美咲', employmentType: 'partTime', hourlyWage: 1050, weeklyHours: 20 },
-    { name: '伊藤 健太', employmentType: 'fullTime', hourlyWage: 1200, weeklyHours: 40 },
+    { name: '山田 太郎', employmentType: 'partTime', hourlyWage: 1100, weeklyHours: 20, monthlyHours: 86 },
+    { name: '佐藤 花子', employmentType: 'partTime', hourlyWage: 1050, weeklyHours: 25, monthlyHours: 108 },
+    { name: '鈴木 一郎', employmentType: 'partTime', hourlyWage: 1100, weeklyHours: 15, monthlyHours: 65 },
+    { name: '田中 美咲', employmentType: 'partTime', hourlyWage: 1050, weeklyHours: 20, monthlyHours: 86 },
+    { name: '伊藤 健太', employmentType: 'fullTime', monthlyBaseSalary: 220000, scheduledHours: 173, overtimeHours: 0 },
   ];
   localStorage.setItem('roster', JSON.stringify(roster));
+
+  // 設定（必要人数3人・予算50万）
+  const settings = {
+    budget: 500000,
+    openTime: '10:00',
+    closeTime: '22:00',
+    requiredStaff: 3,
+    requiredStaffWe: 4,
+    dayHours: {}
+  };
+  localStorage.setItem(`settings_${MONTH}`, JSON.stringify(settings));
+
+  // 希望シフト
+  const requests = {
+    '山田 太郎': {
+      1:  { start: '10:00', end: '15:00' },
+      3:  { start: '10:00', end: '16:00' },
+      5:  { start: '11:00', end: '17:00' },
+      7:  { start: '10:00', end: '15:00' },
+      8:  { start: '10:00', end: '16:00' },
+      10: { start: '10:00', end: '15:00' },
+      12: { start: '11:00', end: '17:00' },
+      14: { start: '10:00', end: '16:00' },
+      15: { start: '10:00', end: '15:00' },
+      17: { start: '10:00', end: '15:00' },
+      19: { start: '11:00', end: '17:00' },
+      21: { start: '10:00', end: '16:00' },
+      22: { start: '10:00', end: '15:00' },
+      24: { start: '10:00', end: '16:00' },
+      26: { start: '11:00', end: '17:00' },
+      28: { start: '10:00', end: '15:00' },
+    },
+    '佐藤 花子': {
+      2:  { start: '11:00', end: '17:00' },
+      4:  { start: '10:00', end: '16:00' },
+      6:  { start: '10:00', end: '15:00' },
+      7:  { start: '11:00', end: '18:00' },
+      9:  { start: '10:00', end: '16:00' },
+      11: { start: '11:00', end: '17:00' },
+      13: { start: '10:00', end: '16:00' },
+      14: { start: '10:00', end: '18:00' },
+      16: { start: '11:00', end: '17:00' },
+      18: { start: '10:00', end: '16:00' },
+      20: { start: '10:00', end: '15:00' },
+      21: { start: '11:00', end: '18:00' },
+      23: { start: '10:00', end: '16:00' },
+      25: { start: '11:00', end: '17:00' },
+      27: { start: '10:00', end: '16:00' },
+    },
+    '鈴木 一郎': {
+      1:  { start: '17:00', end: '22:00' },
+      3:  { start: '17:00', end: '22:00' },
+      6:  { start: '16:00', end: '22:00' },
+      8:  { start: '17:00', end: '22:00' },
+      10: { start: '17:00', end: '22:00' },
+      13: { start: '16:00', end: '22:00' },
+      15: { start: '17:00', end: '22:00' },
+      17: { start: '17:00', end: '22:00' },
+      20: { start: '16:00', end: '22:00' },
+      22: { start: '17:00', end: '22:00' },
+      24: { start: '17:00', end: '22:00' },
+      27: { start: '16:00', end: '22:00' },
+    },
+    '田中 美咲': {
+      2:  { start: '16:00', end: '22:00' },
+      4:  { start: '17:00', end: '22:00' },
+      5:  { start: '16:00', end: '22:00' },
+      9:  { start: '17:00', end: '22:00' },
+      11: { start: '16:00', end: '22:00' },
+      12: { start: '17:00', end: '22:00' },
+      16: { start: '16:00', end: '22:00' },
+      18: { start: '17:00', end: '22:00' },
+      19: { start: '16:00', end: '22:00' },
+      23: { start: '17:00', end: '22:00' },
+      25: { start: '16:00', end: '22:00' },
+      26: { start: '17:00', end: '22:00' },
+    },
+    '伊藤 健太': {
+      1:  { start: '10:00', end: '19:00' },
+      2:  { start: '10:00', end: '19:00' },
+      3:  { start: '10:00', end: '19:00' },
+      4:  { start: '10:00', end: '19:00' },
+      5:  { start: '10:00', end: '19:00' },
+      7:  { start: '10:00', end: '19:00' },
+      8:  { start: '10:00', end: '19:00' },
+      9:  { start: '10:00', end: '19:00' },
+      10: { start: '10:00', end: '19:00' },
+      11: { start: '10:00', end: '19:00' },
+      14: { start: '10:00', end: '19:00' },
+      15: { start: '10:00', end: '19:00' },
+      16: { start: '10:00', end: '19:00' },
+      17: { start: '10:00', end: '19:00' },
+      18: { start: '10:00', end: '19:00' },
+      19: { start: '10:00', end: '19:00' },
+      21: { start: '10:00', end: '19:00' },
+      22: { start: '10:00', end: '19:00' },
+      23: { start: '10:00', end: '19:00' },
+      24: { start: '10:00', end: '19:00' },
+      25: { start: '10:00', end: '19:00' },
+      26: { start: '10:00', end: '19:00' },
+      28: { start: '10:00', end: '19:00' },
+    },
+  };
+  localStorage.setItem(`shift_requests_${MONTH}`, JSON.stringify(requests));
+
+  // 確定シフト（前半 1〜15日）
+  // ・1日：伊藤+山田+鈴木=3人（適正🟢）
+  // ・7日（土）：伊藤+山田+佐藤=3人（不足🔵、土曜必要4人）
+  // ・8日（日）：伊藤+山田+鈴木=3人（不足🔵、週末必要4人）
+  // ・5日（木）：伊藤+山田+佐藤+田中+鈴木=5人（超過🔴、必要3人）
+  // ・伊藤健太：月の契約時間ギリギリ超えで黄色アラート
+  const confirmed = {
+    1:  [ { staffName: '伊藤 健太', start: '10:00', end: '19:00' }, { staffName: '山田 太郎', start: '10:00', end: '15:00' }, { staffName: '鈴木 一郎', start: '17:00', end: '22:00' } ],
+    2:  [ { staffName: '伊藤 健太', start: '10:00', end: '19:00' }, { staffName: '佐藤 花子', start: '11:00', end: '17:00' }, { staffName: '田中 美咲', start: '16:00', end: '22:00' } ],
+    3:  [ { staffName: '伊藤 健太', start: '10:00', end: '19:00' }, { staffName: '山田 太郎', start: '10:00', end: '16:00' }, { staffName: '鈴木 一郎', start: '17:00', end: '22:00' } ],
+    4:  [ { staffName: '伊藤 健太', start: '10:00', end: '19:00' }, { staffName: '佐藤 花子', start: '10:00', end: '16:00' }, { staffName: '田中 美咲', start: '17:00', end: '22:00' } ],
+    5:  [ { staffName: '伊藤 健太', start: '10:00', end: '19:00' }, { staffName: '山田 太郎', start: '11:00', end: '17:00' }, { staffName: '佐藤 花子', start: '10:00', end: '15:00' }, { staffName: '田中 美咲', start: '16:00', end: '22:00' }, { staffName: '鈴木 一郎', start: '17:00', end: '22:00' } ],
+    7:  [ { staffName: '伊藤 健太', start: '10:00', end: '19:00' }, { staffName: '山田 太郎', start: '10:00', end: '15:00' }, { staffName: '佐藤 花子', start: '11:00', end: '18:00' } ],
+    8:  [ { staffName: '伊藤 健太', start: '10:00', end: '19:00' }, { staffName: '山田 太郎', start: '10:00', end: '16:00' }, { staffName: '鈴木 一郎', start: '17:00', end: '22:00' } ],
+    9:  [ { staffName: '伊藤 健太', start: '10:00', end: '19:00' }, { staffName: '佐藤 花子', start: '10:00', end: '16:00' }, { staffName: '田中 美咲', start: '17:00', end: '22:00' } ],
+    10: [ { staffName: '伊藤 健太', start: '10:00', end: '19:00' }, { staffName: '山田 太郎', start: '10:00', end: '15:00' }, { staffName: '鈴木 一郎', start: '17:00', end: '22:00' } ],
+    11: [ { staffName: '伊藤 健太', start: '10:00', end: '19:00' }, { staffName: '佐藤 花子', start: '11:00', end: '17:00' }, { staffName: '田中 美咲', start: '16:00', end: '22:00' } ],
+    12: [ { staffName: '伊藤 健太', start: '10:00', end: '19:00' }, { staffName: '山田 太郎', start: '11:00', end: '17:00' }, { staffName: '田中 美咲', start: '17:00', end: '22:00' } ],
+    13: [ { staffName: '伊藤 健太', start: '10:00', end: '19:00' }, { staffName: '佐藤 花子', start: '10:00', end: '16:00' }, { staffName: '鈴木 一郎', start: '16:00', end: '22:00' } ],
+    14: [ { staffName: '伊藤 健太', start: '10:00', end: '19:00' }, { staffName: '山田 太郎', start: '10:00', end: '16:00' }, { staffName: '佐藤 花子', start: '10:00', end: '18:00' } ],
+    15: [ { staffName: '伊藤 健太', start: '10:00', end: '19:00' }, { staffName: '山田 太郎', start: '10:00', end: '15:00' }, { staffName: '鈴木 一郎', start: '17:00', end: '22:00' } ],
+  };
+  localStorage.setItem(`confirmed_shifts_${MONTH}`, JSON.stringify(confirmed));
+
   localStorage.setItem('demo_initialized', '1');
 })();
 </script>
