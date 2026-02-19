@@ -2050,13 +2050,13 @@ document.getElementById('sync-gas-btn').addEventListener('click', () => {
 
   // スタッフ名簿
   const roster = [
-    { name: '山田 太郎', employmentType: 'partTime', hourlyWage: 1100, weeklyHours: 20, monthlyHours: 86 },
-    { name: '佐藤 花子', employmentType: 'partTime', hourlyWage: 1050, weeklyHours: 25, monthlyHours: 108 },
-    { name: '鈴木 一郎', employmentType: 'partTime', hourlyWage: 1100, weeklyHours: 15, monthlyHours: 65 },
-    { name: '田中 美咲', employmentType: 'partTime', hourlyWage: 1050, weeklyHours: 20, monthlyHours: 86 },
-    { name: '伊藤 健太', employmentType: 'fullTime', monthlyBaseSalary: 220000, scheduledHours: 173, overtimeHours: 0 },
+    { id: 'demo1', name: '山田 太郎', employmentType: 'アルバイト', hourlyWage: 1100, weeklyHours: 20, monthlyHours: 86 },
+    { id: 'demo2', name: '佐藤 花子', employmentType: 'アルバイト', hourlyWage: 1050, weeklyHours: 25, monthlyHours: 108 },
+    { id: 'demo3', name: '鈴木 一郎', employmentType: 'パート', hourlyWage: 1100, weeklyHours: 15, monthlyHours: 65 },
+    { id: 'demo4', name: '田中 美咲', employmentType: 'パート', hourlyWage: 1050, weeklyHours: 20, monthlyHours: 86 },
+    { id: 'demo5', name: '伊藤 健太', employmentType: '正社員', monthlyBaseSalary: 220000, scheduledHours: 173, overtimeHours: 0, weeklyHours: 40, monthlyHours: 173 },
   ];
-  localStorage.setItem('roster', JSON.stringify(roster));
+  localStorage.setItem('staff_roster', JSON.stringify(roster));
 
   // 設定（必要人数3人・予算50万）
   const settings = {
