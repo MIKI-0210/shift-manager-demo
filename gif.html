@@ -209,7 +209,8 @@ main{ max-width:940px; margin:0 auto; padding:22px 16px 40px; display:flex; flex
 .fr-no{ font-family:var(--font-en); font-size:.8rem; font-weight:700; }
 .fr-off{ font-size:.66rem; border:1px solid var(--g300); padding:2px 7px; background:#fff; }
 .fr-off:hover{ border-color:var(--black); }
-.fr-img{ background:var(--g100); aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.fr-range{ font-size:.62rem; color:var(--g500); padding:3px 8px; border-bottom:1px solid var(--line-lt); font-family:var(--font-en); }
+.fr-img{ background:var(--g100); min-height:52px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
 .fr-img img{ max-width:100%; max-height:100%; display:block; }
 .fr-ctl{ display:flex; align-items:center; gap:4px; padding:6px; border-top:1px solid var(--line-lt); }
 .fr-ctl button{ width:26px; height:28px; border:1px solid var(--g300); font-size:.8rem; background:#fff; }
@@ -254,6 +255,11 @@ details.adv > div{ margin-top:14px; }
 .result .gifbox img{ max-width:100%; display:block; image-rendering:auto; }
 .size-tag{ display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; font-size:.84rem; }
 .size-tag b{ font-family:var(--font-en); font-size:1.3rem; }
+.line-edit{ margin-top:10px; border:1px solid var(--line-lt); background:var(--g50); padding:12px 13px; }
+.line-edit-lead{ font-size:.78rem; font-weight:700; margin-bottom:8px; }
+.line-edit-row{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.le-lb{ font-size:.78rem; font-weight:700; min-width:32px; }
+.line-edit input{ flex:1; font-family:var(--font-en); font-size:.86rem; padding:8px 10px; }
 .paste-area{ margin-top:14px; border:1px solid var(--line-lt); background:var(--g50); padding:13px 14px; }
 .paste-lead{ font-size:.8rem; font-weight:700; margin-bottom:6px; }
 .paste-steps{ font-size:.76rem; color:var(--g700); margin:0 0 9px 18px; line-height:1.9; }
@@ -415,7 +421,7 @@ details.adv > div{ margin-top:14px; }
 <header class="hd">
   <div class="hd-in">
     <span class="logo">withdoux</span>
-    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v6</span></h1>
+    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v7</span></h1>
     <p>1枚の画像を切り分けたり、何枚かを並べたりして、パラパラ動くGIFを作るツール。インストールなし・画像はネットに送られません。</p>
   </div>
 </header>
@@ -517,7 +523,18 @@ details.adv > div{ margin-top:14px; }
       </div>
     </div>
     <p class="note" style="margin-top:8px">💡 丸いつまみをドラッグすると線を動かせるよ。ズレたら「均等に戻す」でリセットできる。</p>
-    <p class="note" id="lineInfo" style="margin-top:4px;font-family:var(--font-en);font-weight:700;color:var(--g700)"></p>
+    <div class="line-edit">
+      <p class="line-edit-lead">✂️ 切る位置（px）— ここに数字を入れても線を置けるよ</p>
+      <div class="line-edit-row">
+        <span class="le-lb">よこ</span>
+        <input type="text" id="gyInput" inputmode="numeric" placeholder="例: 325, 632, 947">
+      </div>
+      <div class="line-edit-row">
+        <span class="le-lb">たて</span>
+        <input type="text" id="gxInput" inputmode="numeric" placeholder="なし">
+      </div>
+      <button class="btn btn-sm" id="applyLines" style="margin-top:8px">この数字の位置に線を置く</button>
+    </div>
 
     <div class="btn-row" style="margin-top:12px">
       <button class="btn btn-sm" id="addV">＋ たての線を足す</button>
@@ -1172,6 +1189,8 @@ function colsNow(){ return S.gx.length + 1; }
 
 $('resetGuides').addEventListener('click', () => setGrid(rowsNow(), colsNow()));
 $('snapGuides').addEventListener('click', () => snapGuides(false));
+$('applyLines').addEventListener('click', applyLineInputs);
+['gxInput','gyInput'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); applyLineInputs(); } }));
 $('addV').addEventListener('click', () => addLine('x'));
 $('addH').addEventListener('click', () => addLine('y'));
 document.querySelectorAll('.stepper button').forEach(b => {
@@ -1222,13 +1241,31 @@ function drawGuides(){
   $('rowsVal').textContent = rowsNow();
   $('colsVal').textContent = colsNow();
   $('cellCount').textContent = n;
-  // いまどこで切るかを数字でも出す（合わせたつもりがズレていないか確かめられる）
-  const gxPx = S.gx.map(v => Math.round(v * S.W)), gyPx = S.gy.map(v => Math.round(v * S.H));
-  $('lineInfo').textContent = '✂️ いまの切り位置　たて: ' + (gxPx.length ? gxPx.join(' , ') + ' px' : 'なし')
-    + '　よこ: ' + (gyPx.length ? gyPx.join(' , ') + ' px' : 'なし');
+  syncLineInputs();
   document.querySelectorAll('#presets .chip').forEach(b => {
     b.classList.toggle('on', +b.dataset.r === rowsNow() && +b.dataset.c === colsNow());
   });
+}
+
+// いまの切り位置を数字の欄に映す（打ち込み中は邪魔しない）
+function syncLineInputs(){
+  const gx = $('gxInput'), gy = $('gyInput');
+  if (!gx || !gy) return;
+  if (document.activeElement !== gx) gx.value = S.gx.map(v => Math.round(v * S.W)).join(', ');
+  if (document.activeElement !== gy) gy.value = S.gy.map(v => Math.round(v * S.H)).join(', ');
+}
+
+// 数字で指定された位置に線を置く
+function applyLineInputs(){
+  const toList = (text, size) => String(text || '')
+    .split(/[^0-9.]+/).map(t => parseFloat(t))
+    .filter(n => !isNaN(n) && n > 0 && n < size)
+    .map(n => n / size)
+    .sort((a, b) => a - b);
+  S.gx = toList($('gxInput').value, S.W).slice(0, MAXLINE);
+  S.gy = toList($('gyInput').value, S.H).slice(0, MAXLINE);
+  drawGuides();
+  toast('この位置に線を置いたよ');
 }
 
 function makeLine(ax, idx, v){
@@ -1370,7 +1407,8 @@ function buildFrames(cells){
     cv.width = cell.sw; cv.height = cell.sh;
     const ctx = cv.getContext('2d');
     ctx.drawImage(S.base, cell.sx, cell.sy, cell.sw, cell.sh, 0, 0, cell.sw, cell.sh);
-    return { id: i + 1, canvas: cv, url: cv.toDataURL('image/png'), sec: 0.5, on: true };
+    return { id: i + 1, canvas: cv, url: cv.toDataURL('image/png'), sec: 0.5, on: true,
+             range: `たて ${cell.sy}〜${cell.sy + cell.sh}px` };
   });
   S.orig = S.frames.slice();
 }
@@ -1473,6 +1511,7 @@ function renderFrames(){
     el.innerHTML =
       '<div class="fr-head"><span class="fr-no">#' + (i + 1) + '</span>' +
       '<button class="fr-off" type="button">' + (f.on ? '使わない' : '使う') + '</button></div>' +
+      (f.range ? '<div class="fr-range">' + f.range + '</div>' : '') +
       '<div class="fr-img"><img alt="コマ' + (i + 1) + '"></div>' +
       '<div class="fr-ctl">' +
       '<button type="button" class="mv" data-d="-1" title="ひとつ前へ">◀</button>' +
