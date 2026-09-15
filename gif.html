@@ -429,7 +429,7 @@ details.adv > div{ margin-top:14px; }
 <header class="hd">
   <div class="hd-in">
     <span class="logo">withdoux</span>
-    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v9</span></h1>
+    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v10</span></h1>
     <p>1枚の画像を切り分けたり、何枚かを並べたりして、パラパラ動くGIFを作るツール。インストールなし・画像はネットに送られません。</p>
   </div>
 </header>
@@ -1299,6 +1299,25 @@ function renderSliders(){
   }
 }
 
+// スライダーのつまみと数字だけを今の値に合わせる（作り直さない）
+function updateSliderValues(){
+  const box = $('sliders');
+  if (!box) return;
+  const rows = box.querySelectorAll('.sl-row');
+  const all = S.gy.map(v => ({ v: v, size: S.H })).concat(S.gx.map(v => ({ v: v, size: S.W })));
+  rows.forEach((row, i) => {
+    if (!all[i]) return;
+    const px = Math.round(all[i].v * all[i].size);
+    const inp = row.querySelector('input'), val = row.querySelector('.sl-val');
+    if (inp && document.activeElement !== inp){
+      if (px < +inp.min) inp.min = Math.max(1, px);
+      if (px > +inp.max) inp.max = px;
+      inp.value = px;
+    }
+    if (val) val.textContent = px + 'px';
+  });
+}
+
 // 画面の線の位置だけ更新する（作り直さないので、スライダーを持つ指が離れない）
 function moveLinesOnly(){
   const ov = $('overlay');
@@ -1362,6 +1381,8 @@ function makeLine(ax, idx, v){
       knob.classList.add('knob-num');
       drawLoupe(ax, p, ev);
       updateCellNums();
+      syncLineInputs();        // 数字の欄も一緒に動かす
+      updateSliderValues();    // スライダーのつまみも一緒に動かす
     };
     const up = () => {
       hit.classList.remove('drag');
