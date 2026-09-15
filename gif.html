@@ -438,7 +438,7 @@ details.adv > div{ margin-top:14px; }
 <header class="hd">
   <div class="hd-in">
     <span class="logo">withdoux</span>
-    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v12</span></h1>
+    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v13</span></h1>
     <p>1枚の画像を切り分けたり、何枚かを並べたりして、パラパラ動くGIFを作るツール。インストールなし・画像はネットに送られません。</p>
   </div>
 </header>
@@ -1335,8 +1335,14 @@ function renderSliders(){
       val.textContent = inp.value + 'px';
       moveLinesOnly();            // 線だけ動かす（スライダーは作り直さない）
       syncLineInputs();
+      drawLoupe(ax, arr[idx], 0.5);   // 拡大して見せる（合わせるのは拡大で見ないと難しい）
+      clearTimeout(S.loupeT);
     });
-    inp.addEventListener('change', () => { drawGuides(); });
+    inp.addEventListener('change', () => {
+      drawGuides();
+      clearTimeout(S.loupeT);
+      S.loupeT = setTimeout(() => { $('loupe').hidden = true; }, 2500);  // 少し残してから消す
+    });
     row.appendChild(lb); row.appendChild(inp); row.appendChild(val);
     return row;
   };
@@ -1429,7 +1435,8 @@ function makeLine(ax, idx, v){
       if (ax === 'x'){ hit.style.left = (p * 100) + '%'; } else { hit.style.top = (p * 100) + '%'; }
       knob.textContent = Math.round(p * size);   // いま何pxの位置かを出す
       knob.classList.add('knob-num');
-      drawLoupe(ax, p, ev);
+      const sr = stage.getBoundingClientRect();
+      drawLoupe(ax, p, ax === 'x' ? (ev.clientY - sr.top) / sr.height : (ev.clientX - sr.left) / sr.width);
       updateCellNums();
       syncLineInputs();        // 数字の欄も一緒に動かす
       updateSliderValues();    // スライダーのつまみも一緒に動かす
@@ -1470,20 +1477,14 @@ function makeLine(ax, idx, v){
 }
 
 // ドラッグ中、線のまわりを拡大して見せる（境目にピタッと合わせるため）
-function drawLoupe(ax, p, ev){
+// ax: 'x'=たて線 / 'y'=よこ線、p: その線の位置(0〜1)、cross: もう一方の軸のどこを見せるか(0〜1)
+function drawLoupe(ax, p, cross){
   if (!S.base) return;
   const box = $('loupe'), cv = $('loupeCv'), ctx = cv.getContext('2d');
   const ZOOM = 3;
-  let cx, cy;
-  if (ax === 'x'){
-    cx = p * S.W;
-    const r = $('stage').getBoundingClientRect();
-    cy = clamp((ev.clientY - r.top) / r.height, 0, 1) * S.H;
-  } else {
-    cy = p * S.H;
-    const r = $('stage').getBoundingClientRect();
-    cx = clamp((ev.clientX - r.left) / r.width, 0, 1) * S.W;
-  }
+  const c = clamp(typeof cross === 'number' ? cross : 0.5, 0, 1);
+  const cx = ax === 'x' ? p * S.W : c * S.W;
+  const cy = ax === 'x' ? c * S.H : p * S.H;
   ctx.fillStyle = '#ebe9e7'; ctx.fillRect(0, 0, cv.width, cv.height);
   ctx.imageSmoothingEnabled = false;
   // 画像まるごとを拡大して、いまの線の位置がちょうど中央に来るように置く。
@@ -1497,10 +1498,9 @@ function drawLoupe(ax, p, ev){
   if (ax === 'x'){ ctx.moveTo(cv.width / 2, 0); ctx.lineTo(cv.width / 2, cv.height); }
   else { ctx.moveTo(0, cv.height / 2); ctx.lineTo(cv.width, cv.height / 2); }
   ctx.stroke();
-  // いま触っている線を隠さないよう、反対側の端に出す
-  const r = $('stage').getBoundingClientRect();
-  const touchY = clamp((ev.clientY - r.top) / r.height, 0, 1);
-  if (touchY < 0.5){ box.style.top = 'auto'; box.style.bottom = '6px'; }
+  // いま見ているところを隠さないよう、反対側の端に出す
+  const near = ax === 'x' ? c : p;
+  if (near < 0.5){ box.style.top = 'auto'; box.style.bottom = '6px'; }
   else { box.style.top = '6px'; box.style.bottom = 'auto'; }
   box.hidden = false;
 }
