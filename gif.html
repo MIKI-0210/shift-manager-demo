@@ -255,6 +255,14 @@ details.adv > div{ margin-top:14px; }
 .result .gifbox img{ max-width:100%; display:block; image-rendering:auto; }
 .size-tag{ display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; font-size:.84rem; }
 .size-tag b{ font-family:var(--font-en); font-size:1.3rem; }
+.sl-row{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.sl-lb{ font-size:.76rem; font-weight:700; min-width:52px; }
+.sl-row input[type=range]{
+  flex:1; -webkit-appearance:auto; appearance:auto; height:34px;
+  padding:0; border:0; background:none; accent-color:var(--accent); min-width:0;
+}
+.sl-row input[type=range]:focus{ box-shadow:none; }
+.sl-val{ font-family:var(--font-en); font-size:.82rem; font-weight:700; min-width:52px; text-align:right; }
 .line-edit{ margin-top:10px; border:1px solid var(--line-lt); background:var(--g50); padding:12px 13px; }
 .line-edit-lead{ font-size:.78rem; font-weight:700; margin-bottom:8px; }
 .line-edit-row{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
@@ -421,7 +429,7 @@ details.adv > div{ margin-top:14px; }
 <header class="hd">
   <div class="hd-in">
     <span class="logo">withdoux</span>
-    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v8</span></h1>
+    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v9</span></h1>
     <p>1枚の画像を切り分けたり、何枚かを並べたりして、パラパラ動くGIFを作るツール。インストールなし・画像はネットに送られません。</p>
   </div>
 </header>
@@ -524,7 +532,9 @@ details.adv > div{ margin-top:14px; }
     </div>
     <p class="note" style="margin-top:8px">💡 丸いつまみをドラッグすると線を動かせるよ。ズレたら「均等に戻す」でリセットできる。</p>
     <div class="line-edit">
-      <p class="line-edit-lead">✂️ 切る位置（px）— ここに数字を入れても線を置けるよ</p>
+      <p class="line-edit-lead">✂️ 切る位置を動かす — つまみを左右にスライドしてね</p>
+      <div id="sliders"></div>
+      <p class="line-edit-lead" style="margin-top:12px">数字で決めたいときは、こっち</p>
       <div class="line-edit-row">
         <span class="le-lb">よこ</span>
         <input type="text" id="gyInput" inputmode="numeric" placeholder="例: 325, 632, 947">
@@ -1242,9 +1252,60 @@ function drawGuides(){
   $('colsVal').textContent = colsNow();
   $('cellCount').textContent = n;
   syncLineInputs();
+  renderSliders();
   document.querySelectorAll('#presets .chip').forEach(b => {
     b.classList.toggle('on', +b.dataset.r === rowsNow() && +b.dataset.c === colsNow());
   });
+}
+
+// 線ごとにスライダーを用意する（指でなぞる操作が効かない端末でも確実に動かせる）
+function renderSliders(){
+  const box = $('sliders');
+  if (!box) return;
+  box.innerHTML = '';
+  if (!S.W || !S.H) return;
+  const make = (ax, idx, label) => {
+    const size = ax === 'x' ? S.W : S.H;
+    const arr = ax === 'x' ? S.gx : S.gy;
+    const row = document.createElement('div');
+    row.className = 'sl-row';
+    const lb = document.createElement('span'); lb.className = 'sl-lb'; lb.textContent = label;
+    // となりの線を追い越さないよう、動かせる範囲を隣で挟む
+    const prev = idx === 0 ? 0 : Math.round(arr[idx - 1] * size);
+    const next = idx === arr.length - 1 ? size : Math.round(arr[idx + 1] * size);
+    const inp = document.createElement('input');
+    inp.type = 'range';
+    inp.min = Math.max(1, prev + 2);
+    inp.max = Math.max(Math.max(1, prev + 2) + 1, Math.min(size - 1, next - 2));
+    inp.value = clamp(Math.round(arr[idx] * size), +inp.min, +inp.max); inp.step = 1;
+    inp.setAttribute('aria-label', label + 'の位置');
+    const val = document.createElement('span'); val.className = 'sl-val'; val.textContent = inp.value + 'px';
+    inp.addEventListener('input', () => {
+      arr[idx] = clamp(parseInt(inp.value, 10) / size, 0.0005, 0.9995);
+      val.textContent = inp.value + 'px';
+      moveLinesOnly();            // 線だけ動かす（スライダーは作り直さない）
+      syncLineInputs();
+    });
+    inp.addEventListener('change', () => { drawGuides(); });
+    row.appendChild(lb); row.appendChild(inp); row.appendChild(val);
+    return row;
+  };
+  S.gy.forEach((v, i) => box.appendChild(make('y', i, 'よこ' + (i + 1))));
+  S.gx.forEach((v, i) => box.appendChild(make('x', i, 'たて' + (i + 1))));
+  if (!S.gy.length && !S.gx.length){
+    const p = document.createElement('p');
+    p.className = 'note'; p.textContent = '線がないよ（枚数を増やすと線が出る）';
+    box.appendChild(p);
+  }
+}
+
+// 画面の線の位置だけ更新する（作り直さないので、スライダーを持つ指が離れない）
+function moveLinesOnly(){
+  const ov = $('overlay');
+  const vs = ov.querySelectorAll('.gl-hit-v'), hs = ov.querySelectorAll('.gl-hit-h');
+  S.gx.forEach((v, i) => { if (vs[i]) vs[i].style.left = (v * 100) + '%'; });
+  S.gy.forEach((v, i) => { if (hs[i]) hs[i].style.top = (v * 100) + '%'; });
+  updateCellNums();
 }
 
 // いまの切り位置を数字の欄に映す（打ち込み中は邪魔しない）
