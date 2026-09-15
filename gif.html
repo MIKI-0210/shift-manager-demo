@@ -438,7 +438,7 @@ details.adv > div{ margin-top:14px; }
 <header class="hd">
   <div class="hd-in">
     <span class="logo">withdoux</span>
-    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v11</span></h1>
+    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v12</span></h1>
     <p>1枚の画像を切り分けたり、何枚かを並べたりして、パラパラ動くGIFを作るツール。インストールなし・画像はネットに送られません。</p>
   </div>
 </header>
@@ -1474,7 +1474,6 @@ function drawLoupe(ax, p, ev){
   if (!S.base) return;
   const box = $('loupe'), cv = $('loupeCv'), ctx = cv.getContext('2d');
   const ZOOM = 3;
-  const sw = cv.width / ZOOM, sh = cv.height / ZOOM;   // 元画像から切り取る大きさ
   let cx, cy;
   if (ax === 'x'){
     cx = p * S.W;
@@ -1487,7 +1486,11 @@ function drawLoupe(ax, p, ev){
   }
   ctx.fillStyle = '#ebe9e7'; ctx.fillRect(0, 0, cv.width, cv.height);
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(S.base, cx - sw / 2, cy - sh / 2, sw, sh, 0, 0, cv.width, cv.height);
+  // 画像まるごとを拡大して、いまの線の位置がちょうど中央に来るように置く。
+  // 切り取る範囲を指定する方式だと、画像の端では範囲がはみ出して中身だけズレてしまう。
+  ctx.drawImage(S.base,
+    cv.width / 2 - cx * ZOOM, cv.height / 2 - cy * ZOOM,
+    S.W * ZOOM, S.H * ZOOM);
   // 中心＝いまの線の位置
   ctx.strokeStyle = '#c0678a'; ctx.lineWidth = 2;
   ctx.beginPath();
