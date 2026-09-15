@@ -144,7 +144,11 @@ main{ max-width:940px; margin:0 auto; padding:22px 16px 40px; display:flex; flex
 .stepper .val{ min-width:34px; text-align:center; font-family:var(--font-en); font-size:1.05rem; font-weight:700; }
 
 .stage-wrap{ background:var(--g50); border:1px solid var(--line-lt); padding:16px; display:flex; justify-content:center; }
-.stage{ position:relative; line-height:0; touch-action:none; user-select:none; -webkit-user-select:none; }
+.stage{
+  position:relative; line-height:0; touch-action:none; user-select:none; -webkit-user-select:none;
+  align-self:flex-start;   /* 縦に引き伸ばされて、線の位置が画像とズレるのを防ぐ */
+  font-size:0;
+}
 .stage img{ display:block; max-width:100%; max-height:58vh; height:auto; width:auto; }
 .overlay{ position:absolute; inset:0; }
 .gl{ position:absolute; }
@@ -276,6 +280,11 @@ details.adv > div{ margin-top:14px; }
   font-size:.85rem; resize:none; font-family:var(--font-ja);
 }
 .paste-area textarea:focus{ border-color:var(--accent); box-shadow:none; }
+#diagBox{
+  margin-top:10px; background:#0a0a0a; color:#7CFC98; padding:12px 13px; font-size:.68rem;
+  line-height:1.7; white-space:pre-wrap; word-break:break-all; font-family:var(--font-en);
+  max-height:50vh; overflow:auto; user-select:text; -webkit-user-select:text;
+}
 #errBox{
   background:#c0392b; color:#fff; padding:12px 16px; font-size:.8rem; line-height:1.6;
   word-break:break-all; position:relative; z-index:100;
@@ -429,7 +438,7 @@ details.adv > div{ margin-top:14px; }
 <header class="hd">
   <div class="hd-in">
     <span class="logo">withdoux</span>
-    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v10</span></h1>
+    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v11</span></h1>
     <p>1枚の画像を切り分けたり、何枚かを並べたりして、パラパラ動くGIFを作るツール。インストールなし・画像はネットに送られません。</p>
   </div>
 </header>
@@ -531,6 +540,8 @@ details.adv > div{ margin-top:14px; }
       </div>
     </div>
     <p class="note" style="margin-top:8px">💡 丸いつまみをドラッグすると線を動かせるよ。ズレたら「均等に戻す」でリセットできる。</p>
+    <pre id="diagBox" hidden></pre>
+
     <div class="line-edit">
       <p class="line-edit-lead">✂️ 切る位置を動かす — つまみを左右にスライドしてね</p>
       <div id="sliders"></div>
@@ -551,6 +562,7 @@ details.adv > div{ margin-top:14px; }
       <button class="btn btn-sm" id="addH">＋ よこの線を足す</button>
       <button class="btn btn-sm" id="snapGuides">📐 切れ目に合わせる</button>
       <button class="btn btn-sm" id="resetGuides">均等に戻す</button>
+      <button class="btn btn-sm" id="diagBtn">🔧 ズレを調べる</button>
       <label class="btn btn-sm" style="font-weight:500;cursor:pointer">
         <input type="checkbox" id="fxOn" checked style="width:auto;margin-right:6px;-webkit-appearance:checkbox;appearance:checkbox;padding:0;border:0"> 切るときの演出
       </label>
@@ -1200,6 +1212,44 @@ function colsNow(){ return S.gx.length + 1; }
 $('resetGuides').addEventListener('click', () => setGrid(rowsNow(), colsNow()));
 $('snapGuides').addEventListener('click', () => snapGuides(false));
 $('applyLines').addEventListener('click', applyLineInputs);
+$('diagBtn').addEventListener('click', () => {
+  const box = $('diagBox');
+  if (!S.img){ box.hidden = false; box.textContent = 'まだ画像がないよ'; return; }
+  const pv = $('preview'), st = $('stage');
+  const pr = pv.getBoundingClientRect(), sr = st.getBoundingClientRect();
+  const L = [];
+  L.push('■ 画像');
+  L.push('  もとの大きさ : ' + S.img.naturalWidth + ' x ' + S.img.naturalHeight);
+  L.push('  中で使う大きさ: ' + S.W + ' x ' + S.H);
+  L.push('■ 画面の表示');
+  L.push('  画像の表示   : ' + Math.round(pr.width) + ' x ' + Math.round(pr.height));
+  L.push('  線を重ねる枠 : ' + Math.round(sr.width) + ' x ' + Math.round(sr.height));
+  L.push('  枠と画像のズレ: 左右 ' + Math.round(sr.x - pr.x) + ' / 上下 ' + Math.round(sr.y - pr.y));
+  const dw = Math.round(sr.width - pr.width), dh = Math.round(sr.height - pr.height);
+  L.push('  枠と画像の差 : よこ ' + dw + ' / たて ' + dh + (dw || dh ? '  ← ここが0でないとズレます' : '  (OK)'));
+  L.push('■ 線の位置');
+  const rows = [];
+  S.gy.forEach((v, i) => rows.push(['よこ' + (i + 1), v, S.H, '.gl-hit-h', i]));
+  S.gx.forEach((v, i) => rows.push(['たて' + (i + 1), v, S.W, '.gl-hit-v', i]));
+  rows.forEach(r => {
+    const els = st.querySelectorAll(r[3]);
+    const el = els[r[4]];
+    let shown = '—';
+    if (el){
+      const er = el.getBoundingClientRect();
+      const ratio = r[3] === '.gl-hit-h'
+        ? ((er.y + er.height / 2) - pr.y) / pr.height
+        : ((er.x + er.width / 2) - pr.x) / pr.width;
+      shown = Math.round(ratio * r[2]) + 'px';
+    }
+    L.push('  ' + r[0] + ' : 内部 ' + Math.round(r[1] * r[2]) + 'px / 画面上 ' + shown);
+  });
+  L.push('■ 切ると');
+  const cells = computeCells();
+  cells.forEach((c, i) => L.push('  #' + (i + 1) + ' : たて ' + c.sy + '〜' + (c.sy + c.sh) + 'px  よこ ' + c.sx + '〜' + (c.sx + c.sw) + 'px'));
+  box.hidden = false;
+  box.textContent = L.join('\n');
+});
 ['gxInput','gyInput'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); applyLineInputs(); } }));
 $('addV').addEventListener('click', () => addLine('x'));
 $('addH').addEventListener('click', () => addLine('y'));
