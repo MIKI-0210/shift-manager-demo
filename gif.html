@@ -421,7 +421,7 @@ details.adv > div{ margin-top:14px; }
 <header class="hd">
   <div class="hd-in">
     <span class="logo">withdoux</span>
-    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v7</span></h1>
+    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v8</span></h1>
     <p>1枚の画像を切り分けたり、何枚かを並べたりして、パラパラ動くGIFを作るツール。インストールなし・画像はネットに送られません。</p>
   </div>
 </header>
@@ -1313,17 +1313,26 @@ function makeLine(ax, idx, v){
       document.removeEventListener('pointercancel', up);
       document.removeEventListener('touchmove', touchMove);
       document.removeEventListener('touchend', up);
+      document.removeEventListener('touchcancel', up);
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
       drawGuides();
     };
-    // 指でなぞる動きは端末によって届き方が違うので、両方の受け口を用意する
+    // 指でなぞる動きの受け口。両方つけると打ち消し合うので、使えるほうだけを使う
     const touchMove = ev => {
       if (ev.touches && ev.touches.length){ ev.preventDefault(); move(ev.touches[0]); }
     };
-    document.addEventListener('pointermove', move);
-    document.addEventListener('pointerup', up);
-    document.addEventListener('pointercancel', up);
-    document.addEventListener('touchmove', touchMove, { passive: false });
-    document.addEventListener('touchend', up);
+    if (window.PointerEvent){
+      document.addEventListener('pointermove', move);
+      document.addEventListener('pointerup', up);
+      document.addEventListener('pointercancel', up);
+    } else {
+      document.addEventListener('touchmove', touchMove, { passive: false });
+      document.addEventListener('touchend', up);
+      document.addEventListener('touchcancel', up);
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    }
   });
   return hit;
 }
