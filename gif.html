@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>コマ割りGIFメーカー — withdoux</title>
 <meta name="description" content="1枚の画像を切り分けたり、何枚かを並べたりしてGIFを作るツール。画像はブラウザの中だけで処理されます。">
-<meta name="theme-color" content="#0a0a0a">
+<meta name="theme-color" content="#ffb0d0">
 <meta name="apple-mobile-web-app-title" content="コマ割りGIF">
 <meta property="og:title" content="コマ割りGIFメーカー">
 <meta property="og:description" content="1枚の画像を切ったり、何枚かを並べたりしてGIFにするツール">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0a0a'/%3E%3Cg fill='%23c0678a'%3E%3Crect x='5' y='5' width='9' height='9'/%3E%3Crect x='18' y='5' width='9' height='9'/%3E%3Crect x='5' y='18' width='9' height='9'/%3E%3Crect x='18' y='18' width='9' height='9'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ffb0d0'/%3E%3Cg fill='%23ffffff'%3E%3Crect x='5' y='5' width='9' height='9' rx='2'/%3E%3Crect x='18' y='5' width='9' height='9' rx='2'/%3E%3Crect x='5' y='18' width='9' height='9' rx='2'/%3E%3Crect x='18' y='18' width='9' height='9' rx='2'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;500;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -323,6 +323,251 @@ details.adv > div{ margin-top:14px; }
   .tile{ transition:none !important; }
   .gl-v,.gl-h{ animation:none !important; }
 }
+
+/* ============================================================
+   🎀 ゆめかわテーマ（ここから下が見た目のぜんぶ）
+   ============================================================ */
+:root{
+  --paper:#fff7fc;
+  --bg:#ffffff;
+  --black:#63505f;          /* やわらかい文字色 */
+  --g50:#fff1f8;
+  --g100:#ffe4f1;
+  --g300:#ffc3dd;
+  --g500:#b294a8;
+  --g700:#6f5a6a;
+  --line:#ffc9e0;
+  --line-lt:#ffe0ee;
+  --accent:#ff86b3;
+  --accent-lt:#fff0f6;
+  --lav:#bda8ec;
+  --lav-lt:#f1ebff;
+  --sky:#8fd6f2;
+  --mint:#8fe0cd;
+  --cream:#ffeeb0;
+  --ok:#3fb98d;
+  --ok-lt:#e7fbf3;
+  --warn:#ff6f92;
+  --warn-lt:#fff0f3;
+  --font-ja:'Zen Maru Gothic','Noto Sans JP',sans-serif;
+  --font-en:'Quicksand','Inter',sans-serif;
+  --r:20px;
+  --r-sm:14px;
+  --pill:999px;
+  --soft:0 6px 18px rgba(255,134,179,.16);
+}
+
+body{
+  font-family:var(--font-ja);
+  color:var(--black);
+  background:
+    radial-gradient(circle at 10% 6%, rgba(255,214,235,.85) 0 16%, transparent 17%),
+    radial-gradient(circle at 88% 14%, rgba(206,190,255,.7) 0 13%, transparent 14%),
+    radial-gradient(circle at 78% 82%, rgba(178,229,247,.55) 0 15%, transparent 16%),
+    radial-gradient(circle at 18% 92%, rgba(255,235,168,.55) 0 12%, transparent 13%),
+    linear-gradient(180deg,#fff7fc 0%,#fdf3ff 55%,#f4f9ff 100%);
+  background-attachment:fixed;
+}
+
+/* ヘッダー：ふんわりグラデ＋下だけ丸く */
+.hd{
+  background:linear-gradient(135deg,#ffb0d0 0%,#e3b7f0 45%,#a9d8f5 100%);
+  color:#fff; border-radius:0 0 30px 30px; position:relative; overflow:hidden;
+  box-shadow:0 8px 22px rgba(214,150,205,.28);
+}
+.hd::after{
+  content:'✨　🎀　✨'; position:absolute; right:14px; top:8px;
+  font-size:.8rem; letter-spacing:.2em; opacity:.85;
+}
+.hd .logo{ color:rgba(255,255,255,.9); letter-spacing:.3em; }
+.hd h1{ font-family:var(--font-ja); text-shadow:0 2px 5px rgba(180,110,160,.28); }
+.hd p{ color:rgba(255,255,255,.95); }
+
+/* カード：白くてまあるい */
+.card{
+  background:#fff; border:2px solid var(--line-lt); border-radius:var(--r);
+  box-shadow:var(--soft); padding:20px 18px;
+}
+.step-title{ font-size:1.06rem; }
+.step-title b{
+  background:linear-gradient(135deg,#ffa3c8,#c8adf0); color:#fff; border:0;
+  width:30px; height:30px; flex:0 0 30px; font-size:.9rem;
+  box-shadow:0 3px 8px rgba(255,140,190,.4);
+}
+.sub-h{ color:var(--accent); letter-spacing:.12em; }
+.hr{ background:linear-gradient(90deg,transparent,var(--line),transparent); height:2px; }
+
+/* タブ：まるくてぷっくり */
+.tabs{ border:0; background:none; gap:8px; }
+.tab{
+  border:2px solid var(--line); border-radius:var(--r-sm); background:#fff;
+  color:var(--g700); box-shadow:0 3px 0 var(--line-lt);
+}
+.tab.on{
+  background:linear-gradient(135deg,#ff9ec4,#c4a9ef); color:#fff; border-color:transparent;
+  box-shadow:0 4px 12px rgba(255,140,190,.35);
+}
+.tab .tab-sub{ opacity:.85; }
+
+/* ボタン：押すと沈むぷっくりボタン */
+.btn{
+  border-radius:var(--pill); border:2px solid var(--line);
+  background:#fff; color:var(--g700); box-shadow:0 3px 0 var(--line-lt);
+  transition:transform .08s,box-shadow .08s,background .14s;
+}
+.btn:hover{ background:var(--g50); }
+.btn:active{ transform:translateY(3px); box-shadow:0 0 0 var(--line-lt); }
+.btn-main{
+  background:linear-gradient(135deg,#ffa0c6,#f489b9); color:#fff; border-color:transparent;
+  box-shadow:0 4px 0 #ef7cae;
+}
+.btn-main:hover{ background:linear-gradient(135deg,#ffaccd,#f592c0); }
+.btn-main:active{ box-shadow:0 1px 0 #ef7cae; }
+.btn-accent{
+  background:linear-gradient(135deg,#c9aef2,#a98fe6); color:#fff; border-color:transparent;
+  box-shadow:0 4px 0 #9b7fdc;
+}
+.btn-accent:hover{ background:linear-gradient(135deg,#d2b9f5,#b49aea); }
+.btn-accent:active{ box-shadow:0 1px 0 #9b7fdc; }
+.btn-lg{ font-size:1rem; padding:15px; }
+
+/* 入力まわり */
+input,select{
+  border:2px solid var(--line); border-radius:var(--r-sm); background:#fff;
+  color:var(--black); font-family:var(--font-ja);
+}
+input:focus,select:focus{ box-shadow:0 0 0 3px var(--accent-lt); border-color:var(--accent); }
+select{ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ff86b3' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); }
+
+/* 分け方チップ */
+.chip{ border:2px solid var(--line); border-radius:var(--pill); background:#fff; color:var(--g700); }
+.chip:hover{ border-color:var(--accent); background:var(--accent-lt); }
+.chip.on{
+  background:linear-gradient(135deg,#ffa0c6,#c9aef2); color:#fff; border-color:transparent;
+  box-shadow:0 3px 9px rgba(255,140,190,.35);
+}
+
+/* 数の増減 */
+.stepper button{
+  border:2px solid var(--line); border-radius:50%; background:#fff; color:var(--accent);
+  box-shadow:0 2px 0 var(--line-lt);
+}
+.stepper button:hover{ background:var(--accent-lt); }
+.stepper button:active{ transform:translateY(2px); box-shadow:none; }
+.stepper .val{ color:var(--accent); }
+
+/* 画像のステージ */
+.stage-wrap{
+  background:linear-gradient(135deg,#fff2f9,#f4efff); border:2px dashed var(--g300);
+  border-radius:var(--r); padding:14px;
+}
+.stage img{ border-radius:10px; }
+.cellno{
+  background:linear-gradient(135deg,rgba(255,140,190,.92),rgba(180,150,235,.92));
+  border:2px solid #fff; box-shadow:0 2px 6px rgba(160,100,150,.3); font-family:var(--font-en);
+}
+.knob{
+  border:2px solid var(--accent); background:#fff; color:var(--accent);
+  box-shadow:0 2px 7px rgba(255,140,190,.45);
+}
+.gl-hit.drag .knob{ background:var(--accent); border-color:#fff; color:#fff; }
+.loupe{ border:3px solid var(--accent); border-radius:12px; box-shadow:0 8px 20px rgba(200,120,170,.35); }
+.loupe::after{ background:linear-gradient(135deg,#ff9ec4,#c4a9ef); border-radius:8px 8px 0 0; }
+.tile{ border-radius:8px; box-shadow:0 4px 12px rgba(190,130,175,.35); }
+
+/* えらぶところ */
+.drop{
+  border:3px dashed var(--g300); border-radius:var(--r);
+  background:linear-gradient(135deg,#fff3f9,#f6f0ff);
+}
+.drop:hover,.drop.over{ border-color:var(--accent); background:var(--accent-lt); }
+.drop-main{ color:var(--g700); }
+.paste-area,.line-edit{
+  border:2px solid var(--line-lt); border-radius:var(--r-sm);
+  background:linear-gradient(135deg,#fffafd,#f8f4ff);
+}
+.paste-area textarea{ border:2px dashed var(--g300); border-radius:var(--r-sm); font-family:var(--font-ja); }
+.paste-area textarea:focus{ border-color:var(--accent); }
+
+/* スライダー */
+.sl-row input[type=range]{ accent-color:var(--accent); }
+.sl-lb{ color:var(--accent); }
+.sl-val{ color:var(--g700); font-family:var(--font-en); }
+
+/* コマのカード */
+.frame{
+  border:2px solid var(--line-lt); border-radius:var(--r-sm); overflow:hidden;
+  box-shadow:0 3px 10px rgba(255,150,195,.14);
+}
+.frame.dropzone{ outline:3px solid var(--accent); }
+.fr-head{ background:linear-gradient(135deg,#fff0f7,#f5eeff); border-bottom:2px solid var(--line-lt); }
+.fr-no{ color:var(--accent); font-family:var(--font-en); }
+.fr-off{ border:2px solid var(--line); border-radius:var(--pill); background:#fff; color:var(--g700); }
+.fr-off:hover{ border-color:var(--accent); color:var(--accent); }
+.fr-range{ color:var(--g500); }
+.fr-img{ background:linear-gradient(135deg,#fff4fa,#f4efff); }
+.fr-ctl button{ border:2px solid var(--line); border-radius:10px; background:#fff; color:var(--accent); }
+.fr-ctl button:hover{ background:var(--accent-lt); border-color:var(--accent); }
+.fr-sec input{ border:2px solid var(--line); border-radius:10px; }
+
+/* 判定パネル */
+.verdict{ border:3px solid var(--line); border-radius:var(--r); background:#fff; }
+.verdict.ok{ border-color:#7fd9b4; background:linear-gradient(135deg,#eefbf5,#f1fbff); }
+.verdict.ng{ border-color:#ffa8bf; background:linear-gradient(135deg,#fff2f5,#fff7fb); }
+.vd-num{ font-family:var(--font-en); color:var(--accent); }
+.verdict.ok .vd-num{ color:#2fa377; }
+.verdict.ng .vd-num{ color:var(--warn); }
+.meter{ border:2px solid var(--line); border-radius:var(--pill); height:14px; background:#fff; }
+.meter i{ border-radius:var(--pill); background:linear-gradient(90deg,#8fe0cd,#3fb98d); }
+.verdict.ng .meter i{ background:linear-gradient(90deg,#ffc0d0,#ff6f92); }
+
+details.adv{ border:2px solid var(--line-lt); border-radius:var(--r-sm); background:#fffafd; }
+details.adv summary{ color:var(--g700); }
+.fld label{ color:var(--accent); }
+
+.prog{ border:2px solid var(--line-lt); border-radius:var(--r-sm); background:#fffafd; }
+.prog .bar{ background:var(--g100); border-radius:var(--pill); height:10px; }
+.prog .bar i{ background:linear-gradient(90deg,#ffb3d4,#c9aef2); border-radius:var(--pill); }
+
+.result{ border:2px solid var(--line-lt); border-radius:var(--r); background:#fffafd; }
+.result .gifbox{ background:linear-gradient(135deg,#fff2f9,#f2edff); border-radius:var(--r-sm); }
+.result .gifbox img{ border-radius:10px; }
+.size-tag b{ color:var(--accent); font-family:var(--font-en); }
+
+.toast{
+  background:linear-gradient(135deg,#ff9ec4,#b99aea); border-radius:var(--pill);
+  box-shadow:0 6px 18px rgba(200,120,180,.4); font-weight:700; padding:12px 22px;
+}
+#diagBox{ border-radius:var(--r-sm); border:2px solid var(--lav); }
+#errBox{ background:linear-gradient(135deg,#ff8aa8,#ff6f92); border-radius:0 0 18px 18px; }
+.note{ color:var(--g500); }
+
+@media (max-width:560px){
+  .card{ padding:15px 13px; border-radius:16px; }
+  .hd{ border-radius:0 0 22px 22px; }
+}
+
+
+/* 切り取り線もゆめかわに（見やすさは落とさない） */
+.gl-v{
+  background:repeating-linear-gradient(to bottom, #ff3d85 0 7px, #ffffff 7px 14px);
+  box-shadow:0 0 0 1px rgba(120,40,80,.35), 0 0 5px rgba(255,255,255,.95);
+}
+.gl-h{
+  background:repeating-linear-gradient(to right, #ff3d85 0 7px, #ffffff 7px 14px);
+  box-shadow:0 0 0 1px rgba(120,40,80,.35), 0 0 5px rgba(255,255,255,.95);
+}
+.gl-hit.drag .gl{ box-shadow:0 0 0 2px #a97fe0, 0 0 8px rgba(169,127,224,.9); }
+/* 版の表示を読めるように */
+.hd h1 span{ color:rgba(255,255,255,.8) !important; }
+
+
+/* コマの操作部：秒数を上、◀▶を下に横並び */
+.fr-ctl{ display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:7px 6px; }
+.fr-sec{ grid-column:1 / -1; order:-1; min-width:0; }
+.fr-sec input{ width:100%; min-width:0; padding:7px 4px; text-align:center; font-family:var(--font-en); font-weight:700; color:var(--accent); }
+.fr-ctl button{ width:100%; min-width:0; height:34px; }
+
 </style>
 </head>
 <body>
@@ -438,7 +683,7 @@ details.adv > div{ margin-top:14px; }
 <header class="hd">
   <div class="hd-in">
     <span class="logo">withdoux</span>
-    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v13</span></h1>
+    <h1>コマ割りGIFメーカー <span style="font-family:var(--font-en);font-size:.62rem;font-weight:500;color:var(--g300);letter-spacing:.1em;vertical-align:middle">v14</span></h1>
     <p>1枚の画像を切り分けたり、何枚かを並べたりして、パラパラ動くGIFを作るツール。インストールなし・画像はネットに送られません。</p>
   </div>
 </header>
